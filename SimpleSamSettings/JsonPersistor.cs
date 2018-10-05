@@ -57,8 +57,7 @@ namespace SimpleSamSettings
                 }
 
                 var memoryTraceWriter = new MemoryTraceWriter();
-                var json = JsonConvert.SerializeObject(instance,
-                    Formatting.Indented,
+                var json = JsonConvert.SerializeObject(instance, Formatting.Indented,
                     new JsonSerializerSettings
                     {
                         TraceWriter = memoryTraceWriter,
@@ -135,7 +134,7 @@ namespace SimpleSamSettings
             where TSettingsClass : class
         {
             Contract.Ensures(Contract.Result<string>() != null);
-            // create the file name: ".(CallingClass.Name).(SettingsClass.Name).nameMarker (if supplied).settings"
+            // create the file name: "(CallingClass.Name).(SettingsClass.Name).nameMarker (if supplied).settings"
             string fileName = null;
             if (!string.IsNullOrWhiteSpace(nameMarker))
                 fileName = $"{typeof(TSettingsClass).Name}.{nameMarker}.settings";

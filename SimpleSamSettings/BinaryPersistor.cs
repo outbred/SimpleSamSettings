@@ -126,7 +126,7 @@ namespace SimpleSamSettings
             where TSettingsClass : class
         {
             Contract.Ensures(Contract.Result<string>() != null);
-            // create the file name: ".(CallingClass.Name).(SettingsClass.Name).nameMarker (if supplied).settings"
+            // create the file name: "(CallingClass.Name).(SettingsClass.Name).nameMarker (if supplied).settings"
             string fileName = null;
             if (!string.IsNullOrWhiteSpace(nameMarker))
                 fileName = $"{typeof(TSettingsClass).Name}.{nameMarker}.settings";
