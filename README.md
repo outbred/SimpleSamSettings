@@ -5,7 +5,7 @@ Every application requires user-, application-, and other defined settings.  The
 
 SimpleSameSettings aims to ease the burden of creating, managing, saving, and restoring settings for any application in .NET Standard.
 
-Available on nuget [here](https://www.nuget.org/packages/SimpleSamSettings/1.0.0)     
+Available on nuget [here](https://www.nuget.org/packages/SimpleSamSettings.Framework/1.0.0)     
 
 ## Demo app
 
