@@ -3,7 +3,7 @@ Simple, cross-platform settings framework based on the idea of many distinct set
 
 Every application requires user-, application-, and other defined settings.  The maintenance of these settings can be horrendous over time if not property architectured and maintained.
 
-SimpleSameSettings aims to ease the burden of creating, managing, saving, and restoring settings for any application in .NET Standard.
+SimpleSamSettings aims to ease the burden of creating, managing, saving, and restoring settings for any application in .NET Standard.
 
 Available on nuget [here](https://www.nuget.org/packages/SimpleSamSettings.Framework/1.0.0)     
 
