@@ -53,7 +53,7 @@ settings.RevertChanges();
 ```
 Then set MakeUndoable back to false so it doesn't save off changes:
 ```C#
-settings.MakeUndoable = true;
+settings.MakeUndoable = false;
 ```
 
 # Usage Advice
