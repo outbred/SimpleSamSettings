@@ -2,9 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>SimpleSamSettings.Framework</PackageId>
+    <Authors>Brent Bulla</Authors>
+    <Company>Brent Bulla, LLC</Company>
+    <Description>An easy to use, scalable, and cross-platform settings persistence framework.</Description>
+    <Copyright>2018 Brent Bulla</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Broadcaster.PubSub.Framework" Version="1.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
   </ItemGroup>
 

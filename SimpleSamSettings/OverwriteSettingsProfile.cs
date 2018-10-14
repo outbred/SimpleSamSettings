@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
+using Broadcaster;
 using Newtonsoft.Json;
 
 namespace SimpleSamSettings
@@ -12,13 +14,14 @@ namespace SimpleSamSettings
     ///     Other profiles may be created/used like incrementing a file name for each read/write instead of overwriting one every time
     /// </summary>
     /// <typeparam name="TSettingsClass"></typeparam>
+    [Serializable]
     public abstract class OverwriteSettingsProfile<TSettingsClass> : ResettableSettingsBase, ISettingsBase where TSettingsClass : class, ISettingsBase, new()
     {
         private static TSettingsClass _instance;
 
         private static bool _isNew = true;
 
-        private static readonly object _locker = new object();
+        private static readonly object Locker = new object();
 
         [NonSerialized] private readonly ulong _currentVersion = 0;
 
@@ -81,6 +84,8 @@ namespace SimpleSamSettings
         /// <returns></returns>
         public static bool Reload()
         {
+            if (_instance != null)
+                _instance.PropertyChanged -= PropChangedOnPropertyChanged;
             _instance = null;
             return Instance != null;
         }
@@ -91,39 +96,21 @@ namespace SimpleSamSettings
             {
                 TSettingsClass temp;
                 var type = typeof(TSettingsClass);
-                // Add some flexibility so that if settings prefer the JSON format, we can allow
+                // If not Serializable, then use JSON
                 if (!type.IsSerializable)
-                {
                     IsNew = !JsonPersistor.Retrieve(out temp);
-                    if (temp != null && type.GetInterface(typeof(INotifyPropertyChanged).FullName) != null)
-                    {
-                        var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
-                            .Where(p => p.CanRead && p.CanWrite)
-                            .Select(p => p.Name).ToList();
-
-
-                        ((INotifyPropertyChanged) temp).PropertyChanged += (s, e) =>
-                        {
-                            if (properties.Any(p => p == e.PropertyName))
-                                Save();
-                        };
-                    }
-                }
                 else
-                {
                     IsNew = !BinaryPersistor.Retrieve(out temp);
-                    if (temp != null && type.GetInterface(typeof(INotifyPropertyChanged).FullName) != null)
-                    {
-                        var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).ToList();
+
+                if (temp is INotifyPropertyChanged propChanged)
+                {
+                    var properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy)
+                        .Where(p => p.CanRead && p.CanWrite)
+                        .Select(p => p.Name).ToList();
 
 
-                        // auto-save settings on PropertyChanged events (sweet!)
-                        ((INotifyPropertyChanged) temp).PropertyChanged += (s, e) =>
-                        {
-                            if (properties.Any(p => p.Name == e.PropertyName))
-                                Save();
-                        };
-                    }
+                    // auto-save settings on PropertyChanged events (sweet!)
+                    propChanged.PropertyChanged += PropChangedOnPropertyChanged;
                 }
 
                 instance = temp;
@@ -132,6 +119,19 @@ namespace SimpleSamSettings
             return instance;
         }
 
+        private static bool saving = false;
+        private static async void PropChangedOnPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            var temp = sender as TSettingsClass;
+            if (saving)
+                return;
+            saving = true;
+            if (temp.AutoSave)
+                await Save();
+            saving = false;
+        }
+
+
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
@@ -139,28 +139,43 @@ namespace SimpleSamSettings
             DiskIsNewer = CurrentVersion < PersistedVersion;
         }
 
-        public static bool Save()
+        public static async Task<bool> Save()
         {
-            var settings = _instance;
-            if (settings != null)
+            return await Instance.SaveInstance();
+        }
+
+        [NonSerialized]
+        private Listener<SettingsEvents> _listener;
+        /// <summary>
+        /// To listen for Settings events, subscribe using the property (using Broadcaster pubsub framework)
+        /// </summary>
+        [JsonIgnore]
+        public Listener<SettingsEvents> Listener => _listener ?? (_listener = new Listener<SettingsEvents>(Broadcaster));
+
+        [NonSerialized] private Broadcaster<SettingsEvents> _broadcaster;
+
+        [JsonIgnore]
+        private Broadcaster<SettingsEvents> Broadcaster => _broadcaster ?? (_broadcaster = new Broadcaster<SettingsEvents>());
+
+        public async Task<bool> SaveInstance()
+        {
+            bool result;
+            lock (Locker)
             {
-                bool result;
-                lock (_locker)
-                {
-                    bool exists;
-                    if (!typeof(TSettingsClass).IsSerializable)
-                        result = JsonPersistor.Save(Instance, out exists);
-                    else
-                        result = BinaryPersistor.Save(Instance, out exists);
+                bool exists;
+                if (!typeof(TSettingsClass).IsSerializable)
+                    result = JsonPersistor.Save(Instance, out exists);
+                else
+                    result = BinaryPersistor.Save(Instance, out exists);
 
-                    Instance.DiskIsOlder = false;
-                    Instance.DiskIsNewer = false;
-                }
-
-                return result;
+                Instance.DiskIsOlder = false;
+                Instance.DiskIsNewer = false;
             }
 
-            return false;
+            if (result)
+                await Broadcaster.Broadcast(SettingsEvents.Saved);
+
+            return result;
         }
     }
 }

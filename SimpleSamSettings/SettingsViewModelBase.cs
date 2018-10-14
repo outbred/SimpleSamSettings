@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 
@@ -9,10 +10,11 @@ namespace SimpleSamSettings
     /// <summary>
     /// Settings base class that helps your settings act like ViewModels (can bind them to a View directly for property editing)
     /// </summary>
+    [Serializable]
     [JsonObject(MemberSerialization.OptOut)]
     public abstract class SettingsViewModelBase : INotifyPropertyChanged, IDisposable, INotifyPropertyChanging
     {
-        protected Dictionary<string, object> _values = new Dictionary<string, object>();
+        protected Dictionary<string, object> Values = new Dictionary<string, object>();
 
         [field: NonSerialized] public event PropertyChangedEventHandler PropertyChanged;
 
@@ -31,8 +33,8 @@ namespace SimpleSamSettings
         /// <returns></returns>
         protected virtual T Get<T>([CallerMemberName] string name = null)
         {
-            if (_values.ContainsKey(name))
-                return (T) _values[name];
+            if (Values.ContainsKey(name))
+                return (T) Values[name];
 
             return default(T);
         }
@@ -48,9 +50,9 @@ namespace SimpleSamSettings
         /// <returns></returns>
         protected virtual bool Set<T>(T value, [CallerMemberName] string name = null, bool raisePropChanged = true)
         {
+            Debug.Assert(name != null);
             var previousValue = default(T);
-            // weird unit test check
-            var values = _values;
+            var values = Values;
 
             lock (values)
             {
@@ -98,15 +100,15 @@ namespace SimpleSamSettings
         ///     Fired on the same thread as the Set() so that property changes can be blocked
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="propertyname"></param>
+        /// <param name="propertyName"></param>
         /// <param name="proposedValue"></param>
         /// <param name="currentValue"></param>
         /// <returns></returns>
-        protected virtual bool RaisePropertyChanging<T>(string propertyname, T currentValue, T proposedValue)
+        protected virtual bool RaisePropertyChanging<T>(string propertyName, T currentValue, T proposedValue)
         {
             if (PropertyChanging != null)
             {
-                var args = new PropertyChangingCancelEventArgs<T>(propertyname, currentValue, proposedValue);
+                var args = new PropertyChangingCancelEventArgs<T>(propertyName, currentValue, proposedValue);
                 PropertyChanging(this, args);
                 return !args.Cancel;
             }
@@ -138,7 +140,7 @@ namespace SimpleSamSettings
         {
             if (disposing)
             {
-                _values.Clear();
+                Values.Clear();
                 GC.SuppressFinalize(this);
             }
         }
@@ -149,16 +151,5 @@ namespace SimpleSamSettings
         }
 
         #endregion
-    }
-
-    public interface ISettingsBase
-    {
-        bool DiskIsNewer { get; set; }
-        bool DiskIsOlder { get; set; }
-
-        /// <summary>
-        /// Auto-saves on any property changed event - great if you keep your settings classes small!
-        /// </summary>
-        bool AutoSave { get; set; }
     }
 }

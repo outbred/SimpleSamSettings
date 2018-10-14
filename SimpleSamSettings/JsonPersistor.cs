@@ -29,9 +29,8 @@ namespace SimpleSamSettings
             Contract.Requires(typeof(TSettings).IsSerializable);
             Contract.Requires(instance != null);
             fileExistsAlready = false;
-            if (SettingsGlobals.NoPersistence)
+            if (Globals.NoPersistence)
                 return false;
-
 
             try
             {
@@ -46,7 +45,7 @@ namespace SimpleSamSettings
                     {
                         File.Delete(fileName);
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
                         return false;
                     }
@@ -69,7 +68,7 @@ namespace SimpleSamSettings
 
                 return true;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return false;
             }
@@ -90,7 +89,7 @@ namespace SimpleSamSettings
             where TSettings : class, ISettingsBase, new()
         {
             Contract.Ensures(result != null);
-            if (SettingsGlobals.NoPersistence)
+            if (Globals.NoPersistence)
             {
                 result = new TSettings();
                 return false;
@@ -140,7 +139,7 @@ namespace SimpleSamSettings
                 fileName = $"{typeof(TSettingsClass).Name}.{nameMarker}.settings";
             else
                 fileName = $"{typeof(TSettingsClass).Name}.settings";
-            return Path.Combine(SettingsGlobals.SettingsFileBasePath, fileName);
+            return Path.Combine(Globals.SettingsFileBasePath, fileName);
         }
     }
 }
