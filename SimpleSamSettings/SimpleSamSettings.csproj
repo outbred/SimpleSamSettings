@@ -7,6 +7,15 @@
     <Company>Brent Bulla, LLC</Company>
     <Description>An easy to use, scalable, and cross-platform settings persistence framework.</Description>
     <Copyright>2018 Brent Bulla</Copyright>
+    <PackageLicenseUrl>https://github.com/outbred/SimpleSamSettings/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/outbred/SimpleSamSettings</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/outbred/SimpleSamSettings/blob/master/settings.png</PackageIconUrl>
+    <RepositoryUrl>https://github.com/outbred/SimpleSamSettings</RepositoryUrl>
+    <RepositoryType>github</RepositoryType>
+    <PackageTags>C#, settings, cross-platform, scalable</PackageTags>
+    <PackageReleaseNotes>Intial version with demo</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
