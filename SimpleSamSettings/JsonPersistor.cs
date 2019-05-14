@@ -106,14 +106,14 @@ namespace SimpleSamSettings
 
                     string text = null;
                     text = File.ReadAllText(fileName);
-                    result = JsonConvert.DeserializeObject(text,
+                    result = JsonConvert.DeserializeObject<TSettings>(text,
                         new JsonSerializerSettings
                         {
                             TypeNameHandling = TypeNameHandling.Auto,
                             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
                             PreserveReferencesHandling = PreserveReferencesHandling.All,
                             CheckAdditionalContent = false
-                        }) as TSettings;
+                        });
 
                     if (result == null)
                         result = new TSettings();
