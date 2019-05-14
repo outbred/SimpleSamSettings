@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -6,9 +7,17 @@ using Newtonsoft.Json;
 namespace SimpleSamSettings
 {
     /// <summary>
-    /// Builds on the functionality of SettingsViewModelBase to make undoing settings changes possible, without bothering with disk i/o
+    /// Builds on the functionality of SettingsViewModelBase to make undoing settings changes possible
+    ///
+    ///
+    /// Workflow (can be repeated n times):
+    /// ResetInitialState() - clear any and all original values
+    /// Bind to View - make a ton of changes
+    /// RevertChanges() - returns all settings back to their original values
+    /// 
     /// </summary>
-    public class ResettableSettingsBase : SettingsViewModelBase
+    [Serializable]
+    public abstract class ResettableSettingsBase : SettingsViewModelBase
     {
         /// <summary>
         /// Set to true so that all changes are stored off to be undoable later
@@ -16,7 +25,7 @@ namespace SimpleSamSettings
         protected virtual bool MakeUndoable { get; set; } = false;
 
         /// <summary>
-        ///     Returns the dictionary states for each property that has been modified after ResettingInitialState
+        /// Returns the dictionary states for each property that has been modified after ResettingInitialState 
         /// </summary>
         [JsonIgnore] 
         readonly Dictionary<string, object> _originalValues;
@@ -28,15 +37,15 @@ namespace SimpleSamSettings
 
         #region Overrides of SettingsViewModelBase
 
-        protected override bool RaisePropertyChanging<T>(string propertyname, T currentValue, T proposedValue)
+        protected override bool RaisePropertyChanging<T>(string propertyName, T currentValue, T proposedValue)
         {
             if (MakeUndoable)
             {
-                if (!_originalValues.ContainsKey(propertyname))
-                    _originalValues.Add(propertyname, currentValue);
+                if (!_originalValues.ContainsKey(propertyName))
+                    _originalValues.Add(propertyName, currentValue);
             }
 
-            return base.RaisePropertyChanging(propertyname, currentValue, proposedValue);
+            return base.RaisePropertyChanging(propertyName, currentValue, proposedValue);
         }
 
         /// <summary>
@@ -50,7 +59,7 @@ namespace SimpleSamSettings
         /// <summary>
         /// Reverts all pending changes stored in IntialStates
         /// </summary>
-        public void OnCancel()
+        public void RevertChanges()
         {
             if (_originalValues == null)
                 return;

@@ -6,9 +6,9 @@ namespace SimpleSamSettings
     /// <summary>
     /// A settings file for all of your settings!
     /// </summary>
-    public static class SettingsGlobals
+    public static class Globals
     {
-        static SettingsGlobals()
+        static Globals()
         {
             SettingsFileBasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PROVIDE_A_REAL_PATH");
         }
